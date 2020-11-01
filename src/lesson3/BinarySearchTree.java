@@ -99,10 +99,46 @@ public class BinarySearchTree<T extends Comparable<T>> extends AbstractSet<T> im
      *
      * Средняя
      */
+    // Трудоёмкость - O(log2(n))
+    // Ресурсоёмкость - O(log2(n))
     @Override
     public boolean remove(Object o) {
-        // TODO
-        throw new NotImplementedError();
+        if (!contains(o) || root == null) return false;
+        T t = (T) o;
+        root = remove(root, t);
+        size--;
+        return true;
+    }
+
+    private Node<T> remove(Node<T> begin, T value) {
+        if (begin == null) {
+            return null;
+        }
+        int comparison = value.compareTo(begin.value);
+        if (comparison != 0) {
+            if (comparison < 0) {
+                begin.left = remove(begin.left, value);
+            } else {
+                begin.right = remove(begin.right, value);
+            }
+        } else {
+            if (begin.right == null && begin.left == null) return null;
+            if (begin.right == null) return begin.left;
+            if (begin.left == null) return begin.right;
+            Node<T> left = begin.left;
+            Node<T> right = begin.right;
+            begin = maxValue(begin.left);
+            begin.right = right;
+            begin.left = remove(left, begin.value);
+        }
+        return begin;
+    }
+
+    private Node<T> maxValue(Node<T> node) {
+        while (!(node.right == null)) {
+            node = node.right;
+        }
+        return new Node<T>(node.value);
     }
 
     @Nullable
