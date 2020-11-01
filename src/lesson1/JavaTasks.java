@@ -117,10 +117,11 @@ public class JavaTasks {
      * <p>
      * В случае обнаружения неверного формата файла бросить любое исключение.
      */
+    // Трудоёмкость - O(n(log2(n)))
+    // Ресурсоёмкость - O(n)
     static public void sortAddresses(String inputName, String outputName) throws IOException {
         FileReader fileReader = new FileReader(new File(inputName), StandardCharsets.UTF_8);
         BufferedReader reader = new BufferedReader(fileReader);
-        List<String> list = new ArrayList<>();
         List<String> listNames = new ArrayList<>();
         Map<String, List<String>> map = new TreeMap<>((s1, s2) -> {
             String[] split1 = s1.split(" ");
@@ -138,12 +139,7 @@ public class JavaTasks {
             if (!str.matches("[А-ЯЁа-яёPa-]+\\s[А-ЯЁа-яё-]+\\s-\\s[А-ЯЁа-яё-]+\\s\\d+")) {
                 throw new IllegalArgumentException();
             }
-            list.add(str);
-            String[] split = str.split(" - ");
-            map.put(split[1], null);
-        }
-        for (String element : list) {
-            String[] nameOrStreet = element.split(" - ");
+            String[] nameOrStreet = str.split(" - ");
             if (map.get(nameOrStreet[1]) != null) {
                 listNames = map.get(nameOrStreet[1]);
             }
@@ -202,8 +198,13 @@ public class JavaTasks {
         BufferedReader reader = new BufferedReader(fileReader);
         ArrayList<Double> list = new ArrayList<>();
         String str;
+        double temperature;
         while ((str = reader.readLine()) != null) {
-            list.add(Double.valueOf(str));
+            temperature = Double.parseDouble(str);
+            if (temperature > 500.0 || temperature < -273.0) {
+                throw new IllegalArgumentException();
+            }
+            list.add(temperature);
         }
         sort(list);
         FileWriter writer = new FileWriter(new File(outputName), StandardCharsets.UTF_8);
