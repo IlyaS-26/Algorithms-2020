@@ -126,6 +126,7 @@ abstract class AbstractAlgorithmsTests {
     }
 
     fun calcPrimesNumber(calcPrimesNumber: (Int) -> Int) {
+        assertEquals(3294198, calcPrimesNumber(55213321))
         assertEquals(0, calcPrimesNumber(-1))
         assertEquals(0, calcPrimesNumber(1))
         assertEquals(1, calcPrimesNumber(2))
