@@ -76,6 +76,15 @@ abstract class AbstractOpenAddressingSetTest {
                 )
             }
         }
+        val set = mutableSetOf(1, 2, 3, 4, 5, 6, 7, 8)
+        val addressingSet = OpenAddressingSet<Int>(3)
+        addressingSet.addAll(set)
+        val iterator = addressingSet.iterator()
+        val size = addressingSet.size - 1
+        while (iterator.hasNext()) {
+            if (iterator.next() == 3) addressingSet.remove(3)
+        }
+        assertEquals(size, addressingSet.size)
     }
 
     protected fun doIteratorTest() {

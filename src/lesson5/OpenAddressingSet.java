@@ -1,6 +1,5 @@
 package lesson5;
 
-import kotlin.NotImplementedError;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.AbstractSet;
@@ -129,7 +128,33 @@ public class OpenAddressingSet<T> extends AbstractSet<T> {
     @NotNull
     @Override
     public Iterator<T> iterator() {
-        // TODO
-        throw new NotImplementedError();
+        return new OpenAddressingSetIterator();
+    }
+
+    public class OpenAddressingSetIterator implements Iterator<T> {
+        private int index = 0;
+        private int count = 0;
+
+        // Трудоёмкость - O(1)
+        // Ресурсоёмкость - O(1)
+        @Override
+        public boolean hasNext() {
+            return count < size;
+        }
+
+        // Трудоёмкость - O(n)
+        // Ресурсоёмкость - O(1)
+        @Override
+        @SuppressWarnings("unchecked")
+        public T next() {
+            if (!hasNext()) throw new IllegalStateException();
+            while (storage[index] == null) {
+                index++;
+            }
+            Object current = storage[index];
+            index++;
+            count++;
+            return (T) current;
+        }
     }
 }
