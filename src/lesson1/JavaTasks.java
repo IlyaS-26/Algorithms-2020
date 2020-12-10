@@ -42,51 +42,53 @@ public class JavaTasks {
     // Трудоёмкость - O(n*log2(n))
     // Ресурсоёмкость - O(n)
     static public void sortTimes(String inputName, String outputName) throws IOException {
-        FileReader fileReader = new FileReader(new File(inputName));
-        BufferedReader reader = new BufferedReader(fileReader);
-        String str;
-        List<Integer> list1 = new ArrayList<>();
-        List<Integer> list2 = new ArrayList<>();
-        List<Integer> listAM = new ArrayList<>();
-        List<Integer> listPM = new ArrayList<>();
-        while ((str = reader.readLine()) != null) {
-            if (!str.matches("(0\\d|1[0-2]):[0-5]\\d:[0-5]\\d\\s(AM|PM)")) {
-                throw new IllegalArgumentException();
-            }
-            String[] strings = str.split(":");
-            String[] AMOrPM = strings[2].split(" ");
-            int time = Integer.parseInt(strings[0]) * 3600 + Integer.parseInt(strings[1]) * 60 + Integer.parseInt(AMOrPM[0]);
-            if (AMOrPM[1].equals("AM")) {
-                if (time / 3600 == 12) {
-                    list1.add(time);
-                } else {
-                    listAM.add(time);
+        BufferedReader reader;
+        FileWriter writer;
+        try (FileReader fileReader = new FileReader(new File(inputName))) {
+            reader = new BufferedReader(fileReader);
+            String str;
+            List<Integer> list1 = new ArrayList<>();
+            List<Integer> list2 = new ArrayList<>();
+            List<Integer> listAM = new ArrayList<>();
+            List<Integer> listPM = new ArrayList<>();
+            while ((str = reader.readLine()) != null) {
+                if (!str.matches("(0\\d|1[0-2]):[0-5]\\d:[0-5]\\d\\s(AM|PM)")) {
+                    throw new IllegalArgumentException();
                 }
-            } else {
-                if (time / 3600 == 12) {
-                    list2.add(time + 100000);
+                String[] strings = str.split(":");
+                String[] AMOrPM = strings[2].split(" ");
+                int time = Integer.parseInt(strings[0]) * 3600 + Integer.parseInt(strings[1]) * 60 + Integer.parseInt(AMOrPM[0]);
+                if (AMOrPM[1].equals("AM")) {
+                    if (time / 3600 == 12) {
+                        list1.add(time);
+                    } else {
+                        listAM.add(time);
+                    }
                 } else {
-                    listPM.add(time + 100000);
+                    if (time / 3600 == 12) {
+                        list2.add(time + 100000);
+                    } else {
+                        listPM.add(time + 100000);
+                    }
+                }
+            }
+            sort(listAM);
+            sort(listPM);
+            sort(list1);
+            sort(list2);
+            list1.addAll(listAM);
+            list1.addAll(list2);
+            list1.addAll(listPM);
+            writer = new FileWriter(new File(outputName));
+            for (Integer element : list1) {
+                if (element > 100000) {
+                    element -= 100000;
+                    writer.write(String.format("%02d:%02d:%02d", element / 3600, (element % 3600) / 60, element % 60) + " PM" + "\n");
+                } else {
+                    writer.write(String.format("%02d:%02d:%02d", element / 3600, (element % 3600) / 60, element % 60) + " AM" + "\n");
                 }
             }
         }
-        sort(listAM);
-        sort(listPM);
-        sort(list1);
-        sort(list2);
-        list1.addAll(listAM);
-        list1.addAll(list2);
-        list1.addAll(listPM);
-        FileWriter writer = new FileWriter(new File(outputName));
-        for (Integer element : list1) {
-            if (element > 100000) {
-                element -= 100000;
-                writer.write(String.format("%02d:%02d:%02d", element / 3600, (element % 3600) / 60, element % 60) + " PM" + "\n");
-            } else {
-                writer.write(String.format("%02d:%02d:%02d", element / 3600, (element % 3600) / 60, element % 60) + " AM" + "\n");
-            }
-        }
-        fileReader.close();
         writer.close();
         reader.close();
     }
@@ -120,43 +122,45 @@ public class JavaTasks {
     // Трудоёмкость - O(n(log2(n)))
     // Ресурсоёмкость - O(n)
     static public void sortAddresses(String inputName, String outputName) throws IOException {
-        FileReader fileReader = new FileReader(new File(inputName), StandardCharsets.UTF_8);
-        BufferedReader reader = new BufferedReader(fileReader);
-        List<String> listNames = new ArrayList<>();
-        Map<String, List<String>> map = new TreeMap<>((s1, s2) -> {
-            String[] split1 = s1.split(" ");
-            String[] split2 = s2.split(" ");
-            if (split1[0].equals(split2[0])) {
-                int firstNumber = Integer.parseInt(split1[1]);
-                int secondNumber = Integer.parseInt(split2[1]);
-                return Integer.compare(firstNumber, secondNumber);
-            } else {
-                return split1[0].compareTo(split2[0]);
+        BufferedReader reader;
+        FileWriter writer;
+        try (FileReader fileReader = new FileReader(new File(inputName), StandardCharsets.UTF_8)) {
+            reader = new BufferedReader(fileReader);
+            List<String> listNames = new ArrayList<>();
+            Map<String, List<String>> map = new TreeMap<>((s1, s2) -> {
+                String[] split1 = s1.split(" ");
+                String[] split2 = s2.split(" ");
+                if (split1[0].equals(split2[0])) {
+                    int firstNumber = Integer.parseInt(split1[1]);
+                    int secondNumber = Integer.parseInt(split2[1]);
+                    return Integer.compare(firstNumber, secondNumber);
+                } else {
+                    return split1[0].compareTo(split2[0]);
+                }
+            });
+            String str;
+            while ((str = reader.readLine()) != null) {
+                if (!str.matches("[А-ЯЁа-яёPa-]+\\s[А-ЯЁа-яё-]+\\s-\\s[А-ЯЁа-яё-]+\\s\\d+")) {
+                    throw new IllegalArgumentException();
+                }
+                String[] nameOrStreet = str.split(" - ");
+                if (map.get(nameOrStreet[1]) != null) {
+                    listNames = map.get(nameOrStreet[1]);
+                }
+                listNames.add(nameOrStreet[0]);
+                sort(listNames);
+                map.put(nameOrStreet[1], new ArrayList<>(listNames));
+                listNames.clear();
             }
-        });
-        String str;
-        while ((str = reader.readLine()) != null) {
-            if (!str.matches("[А-ЯЁа-яёPa-]+\\s[А-ЯЁа-яё-]+\\s-\\s[А-ЯЁа-яё-]+\\s\\d+")) {
-                throw new IllegalArgumentException();
+            writer = new FileWriter(new File(outputName), StandardCharsets.UTF_8);
+            for (Map.Entry<String, List<String>> element : map.entrySet()) {
+                String string = "";
+                for (String listElement : element.getValue()) {
+                    string += listElement + ", ";
+                }
+                writer.write(element.getKey() + " - " + string.substring(0, string.length() - 2) + "\n");
             }
-            String[] nameOrStreet = str.split(" - ");
-            if (map.get(nameOrStreet[1]) != null) {
-                listNames = map.get(nameOrStreet[1]);
-            }
-            listNames.add(nameOrStreet[0]);
-            sort(listNames);
-            map.put(nameOrStreet[1], new ArrayList<>(listNames));
-            listNames.clear();
         }
-        FileWriter writer = new FileWriter(new File(outputName), StandardCharsets.UTF_8);
-        for (Map.Entry<String, List<String>> element : map.entrySet()) {
-            String string = "";
-            for (String listElement : element.getValue()) {
-                string += listElement + ", ";
-            }
-            writer.write(element.getKey() + " - " + string.substring(0, string.length() - 2) + "\n");
-        }
-        fileReader.close();
         writer.close();
         reader.close();
     }
@@ -194,24 +198,26 @@ public class JavaTasks {
     // Трудоёмкость - O(n)
     // Ресурсоёмкость - O(n)
     static public void sortTemperatures(String inputName, String outputName) throws IOException {
-        FileReader fileReader = new FileReader(new File(inputName), StandardCharsets.UTF_8);
-        BufferedReader reader = new BufferedReader(fileReader);
-        ArrayList<Double> list = new ArrayList<>();
-        String str;
-        double temperature;
-        while ((str = reader.readLine()) != null) {
-            temperature = Double.parseDouble(str);
-            if (temperature > 500.0 || temperature < -273.0) {
-                throw new IllegalArgumentException();
+        BufferedReader reader;
+        FileWriter writer;
+        try (FileReader fileReader = new FileReader(new File(inputName), StandardCharsets.UTF_8)) {
+            reader = new BufferedReader(fileReader);
+            ArrayList<Double> list = new ArrayList<>();
+            String str;
+            double temperature;
+            while ((str = reader.readLine()) != null) {
+                temperature = Double.parseDouble(str);
+                if (temperature > 500.0 || temperature < -273.0) {
+                    throw new IllegalArgumentException();
+                }
+                list.add(temperature);
             }
-            list.add(temperature);
+            sort(list);
+            writer = new FileWriter(new File(outputName), StandardCharsets.UTF_8);
+            for (Double element : list) {
+                writer.write(element.toString() + "\n");
+            }
         }
-        sort(list);
-        FileWriter writer = new FileWriter(new File(outputName), StandardCharsets.UTF_8);
-        for (Double element : list) {
-            writer.write(element.toString() + "\n");
-        }
-        fileReader.close();
         writer.close();
         reader.close();
     }

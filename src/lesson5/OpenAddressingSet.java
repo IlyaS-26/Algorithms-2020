@@ -9,6 +9,8 @@ import java.util.Set;
 
 public class OpenAddressingSet<T> extends AbstractSet<T> {
 
+    private final Object removed = new Object();
+
     private final int bits;
 
     private final int capacity;
@@ -54,10 +56,10 @@ public class OpenAddressingSet<T> extends AbstractSet<T> {
 
     /**
      * Добавление элемента в таблицу.
-     *
+     * <p>
      * Не делает ничего и возвращает false, если такой же элемент уже есть в таблице.
      * В противном случае вставляет элемент в таблицу и возвращает true.
-     *
+     * <p>
      * Бросает исключение (IllegalStateException) в случае переполнения таблицы.
      * Обычно Set не предполагает ограничения на размер и подобных контрактов,
      * но в данном случае это было введено для упрощения кода.
@@ -67,7 +69,7 @@ public class OpenAddressingSet<T> extends AbstractSet<T> {
         int startingIndex = startingIndex(t);
         int index = startingIndex;
         Object current = storage[index];
-        while (current != null) {
+        while (current != null && current != removed) {
             if (current.equals(t)) {
                 return false;
             }
@@ -84,28 +86,44 @@ public class OpenAddressingSet<T> extends AbstractSet<T> {
 
     /**
      * Удаление элемента из таблицы
-     *
-     * Если элемент есть в таблица, функция удаляет его из дерева и возвращает true.
+     * <p>
+     * Если элемент есть в таблице, функция удаляет его из дерева и возвращает true.
      * В ином случае функция оставляет множество нетронутым и возвращает false.
      * Высота дерева не должна увеличиться в результате удаления.
-     *
+     * <p>
      * Спецификация: {@link Set#remove(Object)} (Ctrl+Click по remove)
-     *
+     * <p>
      * Средняя
      */
+    // Трудоёмкость - O(n)
+    // Ресурсоёмкость - O(1)
     @Override
     public boolean remove(Object o) {
-        return super.remove(o);
+        int startingIndex = startingIndex(o);
+        int index = startingIndex;
+        Object currentElement = storage[index];
+        while (currentElement != null) {
+            if (currentElement.equals(o)) {
+                storage[index] = removed;
+                size--;
+                return true;
+            } else {
+                index = (index + 1) % capacity;
+                if (index == startingIndex) break;
+                currentElement = storage[index];
+            }
+        }
+        return false;
     }
 
     /**
      * Создание итератора для обхода таблицы
-     *
+     * <p>
      * Не забываем, что итератор должен поддерживать функции next(), hasNext(),
      * и опционально функцию remove()
-     *
+     * <p>
      * Спецификация: {@link Iterator} (Ctrl+Click по Iterator)
-     *
+     * <p>
      * Средняя (сложная, если поддержан и remove тоже)
      */
     @NotNull
